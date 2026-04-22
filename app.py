@@ -1,6 +1,6 @@
 import json
 from flask import Flask, abort, jsonify, request
-from flask_restx import Api  # type: ignore
+from flask_restx import Api, Resource  # type: ignore
 
 PAGE_SIZE = 25
 
@@ -10,7 +10,10 @@ api = Api(app)
 with open('awards.json', encoding='utf-8') as f:
     awards = json.load(f)
 
+
 # TODO: Добавить код для чтения лауреатов из файла
+with open('laureats.json', encoding='utf-8') as f:
+    laureats = json.load(f)
 
 
 @app.route("/api/v1/awards/")
@@ -38,7 +41,24 @@ def award_object(pk):
         abort(404)
 
 
+v2 = api.namespace('v2', description='Laureats operations', path='/api/v2')
+
+
 # TODO: Добавить код для получения списка лауреатов
+@v2.route('/laureats/')
+class LaureatList(Resource):
+    def get(self):
+        return laureats
 
 
 # TODO: Добавить код для получения лауреата по индексу
+@v2.route('/laureat/<int:pk>/')
+class LaureatObject(Resource):
+    def get(self, pk: int):
+        if 0 <= pk < len(laureats):
+            return laureats[pk]
+        api.abort(404, f'Laureat {pk} not found')
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
